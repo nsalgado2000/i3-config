@@ -8,19 +8,32 @@
 # To get a config file with the same key positions, but for your current
 # layout, use the i3-config-wizard
 
+# i3 border to cursor app
+for_window [class="Cursor"] border normal
+
+for_window [class="code-oss"] border normal
+
+# execute parcellite (area de transferencia)
+exec --no-startup-id parcellite
+
 # window gaps
 gaps inner 5
 gaps outer 5
 
 # fix on floating windows
 floating_minimum_size 400 x 300
-floating_maximum_size 800 x 600
+floating_maximum_size 1500 x 900
 for_window [window_role="(?i)GtkFileChooserDialog"] floating enable, resize set 640 480, move position center
 
 
-# bright setting
-bindsym XF86MonBrightnessUp exec brightnessctl s +10%
-bindsym XF86MonBrightnessDown exec brightnessctl s 10%-
+# BRIGHTNESS CONTROL
+bindsym XF86MonBrightnessUp exec --no-startup-id brightnessctl s +10% && \
+brightness_percent=$(( $(brightnessctl get) * 100 / $(brightnessctl max) )) && \
+dunstify -r 123 -t 1000 "Brilho: ${brightness_percent}%"
+
+bindsym XF86MonBrightnessDown exec --no-startup-id brightnessctl s 10%- && \
+brightness_percent=$(( $(brightnessctl get) * 100 / $(brightnessctl max) )) && \
+dunstify -r 123 -t 1000 "Brilho: ${brightness_percent}%"
 
 
 # display wallpaper
@@ -32,7 +45,7 @@ exec --no-startup-id picom --config ~/.config/picom/picom.conf
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
-font pango:JetBrainsMono Nerd Font 11
+font pango:JetBrainsMono Nerd Font 10
 
 
 # Start XDG autostart .desktop files using dex. See also
@@ -50,10 +63,17 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 # and nm-applet is a desktop environment-independent system tray GUI for it.
 exec --no-startup-id nm-applet
 
-# Use pactl to adjust volume in PulseAudio.
+# AUDIO CONTROLS
 set $refresh_i3status killall -SIGUSR1 i3status
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && $refresh_i3status
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && $refresh_i3status
+
+bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +10% && \
+volume_percent=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1) && \
+dunstify -r 124 -t 1000 "Volume: ${volume_percent}" && $refresh_i3status
+
+bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -10% && \
+volume_percent=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP '\d+%' | head -1) && \
+dunstify -r 124 -t 1000 "Volume: ${volume_percent}" && $refresh_i3status
+
 bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle && $refresh_i3status
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle && $refresh_i3status
 
@@ -78,10 +98,11 @@ bindsym Mod1+Return exec i3-sensible-terminal
 bindsym Mod1+F4 kill
 
 # Cores personalizadas para janelas
-client.focused          #88c0d0 #434c5e #eceff4 #88c0d0 #434c5e
-client.unfocused        #3b4252 #2e3440 #d8dee9 #3b4252 #2e3440
-client.focused_inactive #4c566a #3b4252 #d8dee9 #4c566a #3b4252
-client.urgent           #bf616a #3b4252 #eceff4 #bf616a #3b4252
+# Cores Tokyo Night para janelas
+client.focused          #7aa2f7 #1a1b26 #c0caf5 #7aa2f7 #2a2c3a
+client.unfocused        #161821 #1a1b26 #565f89 #161821 #1a1b26
+client.focused_inactive #2a2c3a #1a1b26 #565f89 #2a2c3a #161821
+client.urgent           #f7768e #1a1b26 #c0caf5 #f7768e #1a1b26
 
 
 # start dmenu (a program launcher)
@@ -151,10 +172,10 @@ bindsym Mod1+minus scratchpad show
 
 # Define names for default workspaces for which we configure key bindings later on.
 # We use variables to avoid repeating the names in multiple places.
-set $ws1 "1: Notebook"
-set $ws2 "2: Monitor"
-set $ws3 "3"
-set $ws4 "4"
+set $ws1 "1: Main WorkFlow"
+set $ws2 "2: Secondary WorkFlow"
+set $ws3 "3: Consoles"
+set $ws4 "4: Other Stuff"
 set $ws5 "5"
 set $ws6 "6"
 set $ws7 "7"
@@ -229,16 +250,18 @@ bar {
     position top
 
     # Tema de cores inspirado no Nord
-    colors {
-        background #2E3440
-        statusline #D8DEE9
-        separator  #4C566A
+ colors {
+    background #1a1b26
+    statusline #a9b1d6
+    separator  #565f89
 
-        focused_workspace  #81A1C1 #81A1C1 #2E3440
-        active_workspace   #88C0D0 #88C0D0 #2E3440
-        inactive_workspace #4C566A #4C566A #2E3440
-        urgent_workspace   #BF616A #BF616A #2E3440
-    }
+    focused_workspace  #5a4e8c #5a4e8c #e0def4
+    active_workspace   #3b4261 #3b4261 #c0caf5
+    inactive_workspace #161821 #161821 #7f849c
+    urgent_workspace   #f7768e #f7768e #1a1b26
+}
+
+    
 
     # Espaçamento entre os módulos da barra (padding interno)
     tray_output primary
